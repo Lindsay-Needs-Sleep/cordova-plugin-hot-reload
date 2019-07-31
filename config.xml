@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="com.miloproductionsinc.pluginTests" version="0.0.0" android-versionCode="1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget id="com.miloproductionsinc.plugin_tests" version="0.0.0" android-versionCode="1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>pluginTests</name>
     <description>
-        An Apache Cordova application that you can use to run plugintests on.
+        An Apache Cordova application that you can use to run plugin tests on.
     </description>
     <author email="Lindsay-Needs-Sleep@outlook.com" href="http://cordova.io">
         Milo Productions Inc

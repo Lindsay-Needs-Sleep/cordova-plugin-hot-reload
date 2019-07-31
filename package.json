@@ -1,16 +1,15 @@
 {
-  "name": "com.example.hello",
-  "displayName": "HelloWorld",
+  "name": "com.miloproductionsinc.plugin_tests",
+  "displayName": "plugin-tests",
   "version": "1.0.0",
-  "description": "A sample Apache Cordova application that responds to the deviceready event.",
-  "main": "index.js",
+  "description": "An Apache Cordova application that you can use to run plugin tests on.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "ecosystem:cordova"
   ],
-  "author": "Apache Cordova Team",
+  "author": "Milo Productions Inc",
   "license": "Apache-2.0",
   "dependencies": {
     "cordova-android": "git+https://github.com/apache/cordova-android.git#4cf3dcfaae6dc82ddb1ccf439d209cbcc2f474a0",
