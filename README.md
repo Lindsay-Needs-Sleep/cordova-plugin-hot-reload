@@ -5,6 +5,8 @@ Most cordova plugins use the [cordova-plugin-test-framework](https://github.com/
 To run these types of tests you will need to:
 
 * Use an existing Cordova project (That's what this project is for! :D)
+    * Clone this porject
+    * From the project root run `cordova prepare <platform>` platform can be: [android]
 * From the root:
     * Run `cordova plugin add --link ../<cordova-plugin-name>`
     * Run `cordova plugin add --link ../<cordova-plugin-name>/tests`
