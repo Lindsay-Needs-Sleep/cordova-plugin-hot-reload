@@ -10,3 +10,4 @@ gen/
 local.properties
 
 /www/manifest.json
+/package-lock.json
