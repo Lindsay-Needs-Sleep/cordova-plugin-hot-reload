@@ -43,16 +43,16 @@
 
         // Make a copy of all the plugin files for the server
         fs.copySync(
-          plugin.path,
-          path.resolve(COPIES_DIR, plugin.name),
+            plugin.path,
+            path.resolve(COPIES_DIR, plugin.name),
             {
                 overwrite: true,
                 filter: function (filePath) {
-                  // Exclude node_modules
+                    // Exclude node_modules
                     return !filePath.startsWith(path.resolve(plugin.path, 'node_modules'));
                 }
             }
-      );
+        );
 
         for (var p in _plugins) {
             p = _plugins[p];
@@ -76,9 +76,9 @@
     // Finally, start the server
     startServer();
 
-  //* ****************************************************************************************
-  //* ************************************** Functions ***************************************
-  //* ****************************************************************************************
+    //* ****************************************************************************************
+    //* ************************************** Functions ***************************************
+    //* ****************************************************************************************
 
     function getLocalPlugins () {
         // Reset the global plugins
@@ -101,21 +101,21 @@
         }
     }
 
-  /**
-   * Parses through a plugin's plugin.xml file to find files that need
-   * special operations applied.
-   *
-   * @param {object} plugin - Represents a plugin
-   * @property {string} name
-   * @property {string} loc
-   */
+    /**
+     * Parses through a plugin's plugin.xml file to find files that need
+     * special operations applied.
+     *
+     * @param {object} plugin - Represents a plugin
+     * @property {string} name
+     * @property {string} loc
+     */
     function getOpFiles (plugin) {
         var data, etree;
 
         etree = fs.readFileSync(path.resolve(plugin.path, 'plugin.xml')).toString();
         etree = et.parse(etree);
 
-      /** js-module hanlding **/
+        /** js-module hanlding **/
 
         // Find all global modules
         data = etree.findall('js-module') || [];
@@ -138,11 +138,11 @@
         }
     }
 
-  /**
-   * Copies/converts the file so it will work with the cordova framework.
-   *
-   * @param {String} filePath
-   */
+    /**
+     * Copies/converts the file so it will work with the cordova framework.
+     *
+     * @param {String} filePath
+     */
     function updateFileCopy (filePath) {
         var plugin = getPluginByFile(filePath);
 
