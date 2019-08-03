@@ -1,6 +1,8 @@
-<h3 align="center">How to run plugin tests<h3>
+<h1 align="center">cordova-testing</h1>
 
-Most cordova plugins use the [cordova-plugin-test-framework](https://github.com/apache/cordova-plugin-test-framework) to run tests.  
+This is a project that aims to assist in testing plugins with information, or by actually using the project. 
+
+## How To Run [cordova-plugin-test-framework](https://github.com/apache/cordova-plugin-test-framework) Tests
 
 To run these types of tests you will need to use an actual Cordova project.  You can use an existing project or you can clone this project. Either way, you should be able to follow these directions:
 
@@ -22,7 +24,7 @@ To run these types of tests you will need to use an actual Cordova project.  You
     * Note: This will create and populate a folder `/hot-reload-files` (incase you were wondering where that came from)
 
 
-<h3 align="center">Contributing<h3>
+<h1 align="center">Contributing<h1>
 
 ## Formatting
 
