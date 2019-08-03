@@ -7,8 +7,9 @@
     <author email="Lindsay-Needs-Sleep@outlook.com" href="http://cordova.io">
         Milo Productions Inc
     </author>
-    <content src="cdvtests/index.html" />
+    <content src="http://192.168.1.107:8333/cdvtests/index.html" />
     <access origin="*" />
+    <allow-navigation href="*://192.168.1.107/*" />
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
     <allow-intent href="tel:*" />
