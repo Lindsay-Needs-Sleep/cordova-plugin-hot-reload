@@ -54,17 +54,20 @@
             }
         );
 
+        var shouldWatchDir = true;
         for (var p in _plugins) {
             p = _plugins[p];
             // If this plugin is contained within an any other local plugin
             if (plugin.path !== p.path && plugin.path.startsWith(p.path)) {
                 // We don't want to watch this dir since it will/already is watched
+                shouldWatchDir = false;
                 break;
             }
         }
-
-        // And watch the original directory for changes
-        watchDir(plugin.path);
+        if (shouldWatchDir) {
+            // And watch the original directory for changes
+            watchDir(plugin.path);
+        }
     }
 
     // We need to make sure our initial copies of files have
