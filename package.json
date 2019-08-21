@@ -1,6 +1,6 @@
 {
   "name": "com.miloproductionsinc.plugin_tests",
-  "displayName": "plugin-tests",
+  "displayName": "Plugin Tests",
   "version": "1.0.0",
   "description": "An Apache Cordova application that you can use to run plugin tests on.",
   "keywords": [

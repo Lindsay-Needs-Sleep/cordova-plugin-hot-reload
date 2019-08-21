@@ -16,6 +16,9 @@ To run these types of tests you will need to use an actual Cordova project.  You
 * Run the project:
     * `cordova prepare <platform>`
     * `cordova run <platform>`
+
+### Hot Reload JS 
+
 * Once the project is loaded onto your device, we can start the **hot re-loading js server** (optional)
     * This will allow you to make changes to the plugin's js and test js files and see the change's reflected immediately after a page refresh
         * (If using your own project, you can copy the `scripts` folder from this project to your's)
