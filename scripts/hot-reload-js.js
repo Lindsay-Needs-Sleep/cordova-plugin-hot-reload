@@ -1,3 +1,27 @@
+/**
+ * Starts a server which serves the contents of platforms/android/app/src/main/assets/www excluding local plugins.
+ * 
+ * local plugins are plugins installed from a local file (aka. in package.json, their entry begins with "file:"")
+ * Local plugins have their files initially replicated into the /.hot_reload_js_files directory.
+ * The local plugin dir (referenced in package.json) is then monitored for changes.  
+ * When any file in a local plugin is changed it re-copied into the .hot_reload_js_files dir.
+ * The plugins in .hot_reload_js_files dir are hosted in place of their unchanging counterpart in platforms/android/app/src/main/assets/www.
+ *
+ * Files that are copied into the .hot_reload_js_files dir may need to have certain operations applied to them to
+ * replicate the changes they receive when being installed normally.
+ * The only special operation that we explicitly handle currently are files marked as "js-module" in plugin.xml
+ * js-module files have a line code add to the beginning and end of the file.
+ * 
+ * To make use of this file just:
+ * - navigate to, or request a file hosted by hot-reload using:
+ *   - eg. http://192.168.1.107:8333/index.html
+ *   - instead of file:///android_asset/www/index.html
+ * 
+ * You can check the contents of .hot_reload_js_files for troubleshooting (it is in the project root by default) 
+ * 
+ * Usage:
+ * `node ./scripts/hot-reload-js.js <platform> [<port default=8333>]` (currently only available for android)
+ */
 (function () {
 
     var fs = require('fs-extra');
@@ -10,11 +34,11 @@
         android: path.resolve(__dirname, '../platforms/android/app/src/main/assets/www/'),
         ios: path.resolve(__dirname, '../platforms/ios/TODO') // TODO add actual path
     };
-    var COPIES_DIR = path.resolve(__dirname, '../hot_reload_files');
+    var COPIES_DIR = path.resolve(__dirname, '../.hot_reload_js_files');
 
     var _server;
     var _platform;
-    var _port;
+    var _port = 8333;
     var _opFiles = {}; // Files that need special operations
     var _plugins;
 
@@ -26,10 +50,12 @@
     } else {
         throw new Error('No valid platform found!  Expected "android" or "ios" as an argument');
     }
+    if (process.argv.length >= 4) {
+        _port = process.argv[3];
+    }
 
     // Configure options
     ASSET_DIR = ASSET_DIR[_platform];
-    _port = 8333;
 
     // Get all local plugins
     getLocalPlugins();
@@ -187,7 +213,7 @@
 
     function watchDir (dir) {
         watch(dir, { recursive: true }, function (eventType, filename) {
-            if (eventType === 'update' && filename.match(/\.(js|json)$/i)) {
+            if (eventType === 'update') { //} && !filename.match(/\.(java)$/i)) {
                 console.log(new Date().toLocaleString() + ': Change detected at: ' + filename);
                 updateFileCopy(filename);
             }
@@ -199,7 +225,7 @@
 
         var key, entries, entry;
 
-        // Note: All asset files are only refeshed when the plugin is removed and re-added
+        // Note: All asset files are only refreshed when the plugin is removed and re-added
         // Add all asset files to static server (expect plugins folder)
         entries = fs.readdirSync(ASSET_DIR);
         // Loop through all entries

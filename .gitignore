@@ -11,4 +11,4 @@ local.properties
 
 /www/manifest.json
 /package-lock.json
-/hot_reload_files
+/.hot-reload-js-files
