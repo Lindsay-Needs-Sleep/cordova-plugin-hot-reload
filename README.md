@@ -7,18 +7,19 @@ This is a project that aims to assist in testing plugins with information, or by
 To run these types of tests you will need to use an actual Cordova project.  You can use an existing project or you can clone this project. Either way, you should be able to follow these directions:
 
 * From the project root run `npm install`
-* In `config.xml` ensure you have the following entries with your correct ip
-    * `<content src="http://<local-ip>:8333/cdvtests/index.html" />`
-    * `<allow-navigation href="*://<local-ip>/*" />`
 * Now add the plugin you want to test (you will need admin permission for the below commands)
-    * Run `cordova plugin add --link ../<cordova-plugin-name>`
-    * Run `cordova plugin add --link ../<cordova-plugin-name>/tests`
+    * Run `cordova plugin add --link <relative path to cordova-plugin>` 
+    * Run `cordova plugin add --link <relative path to cordova-plugin>/tests`
 * Run the project:
     * `cordova prepare <platform>`
     * `cordova run <platform>`
 
 ### Hot Reload JS 
 
+* In `config.xml` ensure you have the following entries with your correct ip
+    * `<allow-navigation href="*://<local-ip>/*" />`
+    * `<content src="http://<local-ip>:8333/cdvtests/index.html" />`
+        * `http://<local-ip>:8333` is where the hot-reload server will listen
 * Once the project is loaded onto your device, we can start the **hot re-loading js server** (optional)
     * This will allow you to make changes to the plugin's js and test js files and see the change's reflected immediately after a page refresh
         * (If using your own project, you can copy the `scripts` folder from this project to your's)

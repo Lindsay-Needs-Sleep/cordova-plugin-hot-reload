@@ -14,7 +14,6 @@
   },
   "dependencies": {
     "cordova-android": "git+https://github.com/apache/cordova-android.git#4cf3dcfaae6dc82ddb1ccf439d209cbcc2f474a0",
-    "cordova-plugin-contacts": "^3.0.1",
     "cordova-plugin-test-framework": "^1.1.6"
   },
   "devDependencies": {
