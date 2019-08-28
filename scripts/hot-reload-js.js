@@ -49,7 +49,7 @@
     } else if (process.argv.indexOf('ios') > -1) {
         _platform = 'ios';
     } else {
-        throw new Error('No valid platform found!  Expected "android" or "ios" as an argument');
+        return console.error('No valid platform found!  Expected "android" or "ios" as an argument');
     }
     if (process.argv.length >= 4) {
         _port = process.argv[3];
