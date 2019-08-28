@@ -1,9 +1,9 @@
 /**
  * Starts a server which serves the contents of platforms/android/app/src/main/assets/www excluding local plugins.
- * 
+ *
  * local plugins are plugins installed from a local file (aka. in package.json, their entry begins with "file:"")
  * Local plugins have their files initially replicated into the /.hot_reload_js_files directory.
- * The local plugin dir (referenced in package.json) is then monitored for changes.  
+ * The local plugin dir (referenced in package.json) is then monitored for changes.
  * When any file in a local plugin is changed it is re-copied into the .hot_reload_js_files dir.
  * The plugins in .hot_reload_js_files dir are hosted in place of their unchanging counterpart in platforms/android/app/src/main/assets/www.
  *
@@ -11,18 +11,19 @@
  * replicate the changes they receive when being installed normally.
  * The only special operation that we explicitly handle currently are files marked as "js-module" in plugin.xml
  * js-module files have a line code add to the beginning and end of the file.
- * 
+ *
  * To make use of this file just:
  * - navigate to, or request a file hosted by hot-reload using:
  *   - eg. http://192.168.1.107:8333/index.html
  *   - instead of file:///android_asset/www/index.html
- * 
- * You can check the contents of .hot_reload_js_files for troubleshooting (it is in the project root by default) 
- * 
+ *
+ * You can check the contents of .hot_reload_js_files for troubleshooting (it is in the project root by default)
+ *
  * Usage:
  * `node ./scripts/hot-reload-js.js <platform> [<port default=8333>]` (currently only available for android)
  */
 (function () {
+    'use strict';
 
     var fs = require('fs-extra');
     var path = require('path');
@@ -197,13 +198,35 @@
         fs.writeFileSync(path.resolve(COPIES_DIR, plugin.name, path.relative(plugin.path, filePath)), fileData, 'utf-8');
     }
 
+    /**
+     * Removes the corresponding file copy.
+     *
+     * @param {String} filePath
+     */
+    function removeFileCopy (filePath) {
+        var plugin = getPluginByFile(filePath);
+
+        // Write the file back out
+        fs.unlinkSync(path.resolve(COPIES_DIR, plugin.name, path.relative(plugin.path, filePath)));
+    }
+
+    /**
+     * Recursively looks for the plugin with the deepest directory that matches the filePath.
+     * This strategy works for nested plugins.  It will prefer to match with the deepest nested
+     * plugin, rather than the parent.
+     *
+     * @param {string} filePath - the file to find it's plugin's folder
+     * @param {string} originalPath - for internal use only
+     */
     function getPluginByFile (filePath, originalPath) {
         originalPath = originalPath || filePath;
+        // If there is nowhere left to go up in the path basically
         if (path.dirname(filePath) === filePath) {
             throw new Error('Could not find a local plugin that contains this file path: ' + originalPath);
         }
         for (var p in _plugins) {
             p = _plugins[p];
+            // Does the plugin path match the file path exactly?
             if (path.relative(p.path, filePath) === '') {
                 return p;
             }
@@ -213,9 +236,13 @@
 
     function watchDir (dir) {
         watch(dir, { recursive: true }, function (eventType, filename) {
-            if (eventType === 'update') { //} && !filename.match(/\.(java)$/i)) {
+            if (eventType === 'update') {
                 console.log(new Date().toLocaleString() + ': Change detected at: ' + filename);
                 updateFileCopy(filename);
+            }
+            if (eventType === 'remove') {
+                console.log(new Date().toLocaleString() + ': Delete detected at: ' + filename);
+                removeFileCopy(filename);
             }
         });
     }
