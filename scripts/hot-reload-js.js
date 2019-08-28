@@ -4,7 +4,7 @@
  * local plugins are plugins installed from a local file (aka. in package.json, their entry begins with "file:"")
  * Local plugins have their files initially replicated into the /.hot_reload_js_files directory.
  * The local plugin dir (referenced in package.json) is then monitored for changes.  
- * When any file in a local plugin is changed it re-copied into the .hot_reload_js_files dir.
+ * When any file in a local plugin is changed it is re-copied into the .hot_reload_js_files dir.
  * The plugins in .hot_reload_js_files dir are hosted in place of their unchanging counterpart in platforms/android/app/src/main/assets/www.
  *
  * Files that are copied into the .hot_reload_js_files dir may need to have certain operations applied to them to
