@@ -58,6 +58,15 @@
     // Configure options
     ASSET_DIR = ASSET_DIR[_platform];
 
+    // remove and reset hot_reload_files dir
+    try {
+        fs.removeSync(COPIES_DIR);
+    } catch (e) {
+        if (e.code !== 'ENOENT') {
+            throw e;
+        }
+    }
+
     // Get all local plugins
     getLocalPlugins();
 
@@ -76,7 +85,7 @@
                 overwrite: true,
                 filter: function (filePath) {
                     // Exclude node_modules
-                    return !filePath.startsWith(path.resolve(plugin.path, 'node_modules'));
+                    return shouldWatchPath(filePath);
                 }
             }
         );
@@ -169,6 +178,18 @@
     }
 
     /**
+     * Decides whether a path should be watched or not.
+     * @param {string} filePath
+     * @returns {boolean}
+     */
+    function shouldWatchPath (filePath) {
+        var plugin = getPluginByFile(filePath);
+        filePath = path.relative(plugin.path, filePath);
+        return !filePath.startsWith('node_modules')
+            && !filePath.startsWith('.');
+    }
+
+    /**
      * Copies/converts the file so it will work with the cordova framework.
      *
      * @param {String} filePath
@@ -207,7 +228,7 @@
         var plugin = getPluginByFile(filePath);
 
         // Write the file back out
-        fs.unlinkSync(path.resolve(COPIES_DIR, plugin.name, path.relative(plugin.path, filePath)));
+        fs.removeSync(path.resolve(COPIES_DIR, plugin.name, path.relative(plugin.path, filePath)));
     }
 
     /**
@@ -236,6 +257,8 @@
 
     function watchDir (dir) {
         watch(dir, { recursive: true }, function (eventType, filename) {
+            if (!shouldWatchPath(filename)) { return; }
+
             if (eventType === 'update') {
                 console.log(new Date().toLocaleString() + ': Change detected at: ' + filename);
                 updateFileCopy(filename);
