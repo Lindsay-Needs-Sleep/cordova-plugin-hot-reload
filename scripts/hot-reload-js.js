@@ -258,6 +258,8 @@
     function watchDir (dir) {
         watch(dir, { recursive: true }, function (eventType, filename) {
             if (!shouldWatchPath(filename)) { return; }
+            // Also ignore changes to directories
+            if (fs.lstatSync(filename).isDirectory()) { return; }
 
             if (eventType === 'update') {
                 console.log(new Date().toLocaleString() + ': Change detected at: ' + filename);
