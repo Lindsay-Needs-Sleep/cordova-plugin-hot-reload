@@ -75,20 +75,7 @@
         plugin = _plugins[name];
 
         // Store any js modules in the global
-        getOpFiles(plugin);
-
-        // Make a copy of all the plugin files for the server
-        fs.copySync(
-            plugin.path,
-            path.resolve(COPIES_DIR, plugin.name),
-            {
-                overwrite: true,
-                filter: function (filePath) {
-                    // Exclude node_modules
-                    return shouldWatchPath(filePath);
-                }
-            }
-        );
+        initOpFiles(plugin);
 
         var shouldWatchDir = true;
         for (var p in _plugins) {
@@ -104,12 +91,6 @@
             // And watch the original directory for changes
             watchDir(plugin.path);
         }
-    }
-
-    // We need to make sure our initial copies of files have
-    // had their special operation performed on them
-    for (var loc in _opFiles) {
-        updateFileCopy(loc);
     }
 
     // Finally, start the server
@@ -148,32 +129,37 @@
      * @property {string} name
      * @property {string} loc
      */
-    function getOpFiles (plugin) {
-        var data, etree;
+    function initOpFiles (plugin) {
+        var etree;
 
         etree = fs.readFileSync(path.resolve(plugin.path, 'plugin.xml')).toString();
         etree = et.parse(etree);
 
-        /** js-module hanlding **/
+        addOpFilesOfTag(etree, 'js-module');
+        addOpFilesOfTag(etree, 'asset');
+    }
 
+    function addOpFilesOfTag(etree, tagName) {
         // Find all global modules
-        data = etree.findall('js-module') || [];
+        var tags = etree.findall(tagName) || [];
         // Find and add all platform specific modules
         etree = etree.find('platform/[@name="' + _platform + '"]');
-        etree = etree ? etree.find('js-module') : null;
+        etree = etree ? etree.find(tagName) : null;
         if (etree && etree.length > 0) {
-            data.push(etree);
+            tags.push(etree);
         }
-        // Add the js-modules to _opFiles
-        var loc;
-        for (var e in data) {
-            e = data[e];
-            loc = path.resolve(plugin.path, e.attrib.src);
-            _opFiles[loc] = {
-                relPath: e.attrib.src,
+        for (var e in tags) {
+            e = tags[e];
+            var src_absolute = path.resolve(plugin.path, e.attrib.src);
+            _opFiles[src_absolute] = {
+                src_absolute: src_absolute,
+                src: e.attrib.src,
                 name: e.attrib.name,
-                type: 'js-module'
+                target: e.attrib.target,
+                type: tagName
             };
+            // Make initial copy of opFile
+            updateFileCopy(src_absolute);
         }
     }
 
@@ -183,10 +169,29 @@
      * @returns {boolean}
      */
     function shouldWatchPath (filePath) {
-        var plugin = getPluginByFile(filePath);
-        filePath = path.relative(plugin.path, filePath);
-        return !filePath.startsWith('node_modules')
-            && !filePath.startsWith('.');
+        return getOpRulesForFile(filePath).length !== 0;
+    }
+
+    function getOpRulesForFile (filePath) {
+        var rules = [];
+        // Check all opFile paths
+        for (var p in _opFiles) {
+            // If the file resides in, or is an exact match for an opFile
+            if (filePath.startsWith(p)) {
+                rules.push(_opFiles[p]);
+            }
+        }
+        return rules;
+    }
+
+    function getTargetPath(rule, filePath) {
+        switch (rule.type) {
+            case 'js-module':
+                var plugin = getPluginByFile(filePath);
+                return path.resolve(COPIES_DIR, 'plugins', plugin.name, path.relative(plugin.path, filePath));
+            case 'asset':
+                return path.resolve(COPIES_DIR, rule.target, path.relative(rule.src_absolute, filePath));
+        }
     }
 
     /**
@@ -195,28 +200,25 @@
      * @param {String} filePath
      */
     function updateFileCopy (filePath) {
-        var plugin = getPluginByFile(filePath);
-
-        // Read the file
-        var fileData = fs.readFileSync(filePath, 'utf-8');
-
         // Does the file need a special operation?
-        var file;
-        if (_opFiles[filePath]) {
-            file = _opFiles[filePath];
+        var rules = getOpRulesForFile(filePath);
+        for (var i = 0; i < rules.length; i++) {
+            var rule = rules[i];
 
-            switch (file.type) {
+            switch (rule.type) {
             case 'js-module':
-                if (file.relPath.match(/.*\.json$/)) {
+                var fileData = fs.readFileSync(filePath, 'utf-8');
+                if (rule.src.match(/.*\.json$/)) {
                     fileData = 'module.exports = ' + fileData;
                 }
-                fileData = 'cordova.define("' + plugin.name + '.' + file.name + '", function(require, exports, module) { \n' + fileData + '\n});\n';
+                fileData = 'cordova.define("' + plugin.name + '.' + rule.name + '", function(require, exports, module) { \n' + fileData + '\n});\n';
+                fs.outputFileSync(getTargetPath(rule, filePath), fileData, 'utf-8');
+                break;
+            case 'asset':
+                fs.copySync(filePath, getTargetPath(rule, filePath), { overwrite: true });
                 break;
             }
         }
-
-        // Write the file back out
-        fs.writeFileSync(path.resolve(COPIES_DIR, plugin.name, path.relative(plugin.path, filePath)), fileData, 'utf-8');
     }
 
     /**
@@ -225,10 +227,10 @@
      * @param {String} filePath
      */
     function removeFileCopy (filePath) {
-        var plugin = getPluginByFile(filePath);
-
-        // Write the file back out
-        fs.removeSync(path.resolve(COPIES_DIR, plugin.name, path.relative(plugin.path, filePath)));
+        var rules = getOpRulesForFile(filePath);
+        for (var i = 0; i < rules.length; i++) {
+            fs.removeSync(getTargetPath(rules[i], filePath));
+        }
     }
 
     /**
@@ -258,8 +260,6 @@
     function watchDir (dir) {
         watch(dir, { recursive: true }, function (eventType, filename) {
             if (!shouldWatchPath(filename)) { return; }
-            // Also ignore changes to directories
-            if (fs.lstatSync(filename).isDirectory()) { return; }
 
             if (eventType === 'update') {
                 console.log(new Date().toLocaleString() + ': Change detected at: ' + filename);
@@ -275,41 +275,9 @@
     function startServer () {
         _server = express();
 
-        var key, entries, entry;
-
-        // Note: All asset files are only refreshed when the plugin is removed and re-added
-        // Add all asset files to static server (expect plugins folder)
-        entries = fs.readdirSync(ASSET_DIR);
-        // Loop through all entries
-        for (key in entries) {
-            entry = entries[key];
-            // If not the plugins folder
-            if (entry !== 'plugins') {
-                // Add it to the server
-                _server.use('/' + entry, express.static(path.resolve(ASSET_DIR, entry)));
-            }
-        }
-
-        // Add all the asset and local plugins
-        entries = fs.readdirSync(path.resolve(ASSET_DIR, 'plugins'));
-        var isLocal;
-        for (key in entries) {
-            entry = entries[key];
-            // Special handling for local plugins
-            isLocal = false;
-            for (var p in _plugins) {
-                p = _plugins[p];
-                if (entry === p.name) {
-                    isLocal = true;
-                    _server.use('/plugins/' + entry, express.static(path.resolve(COPIES_DIR, p.name)));
-                }
-            }
-            // Else, if not local
-            if (!isLocal) {
-                // Add regular asset plugin
-                _server.use('/plugins/' + entry, express.static(path.resolve(ASSET_DIR, 'plugins', entry)));
-            }
-        }
+        // Add COPIES_DIR first so it is used before the ASSET_DIR
+        _server.use('/', express.static(COPIES_DIR));
+        _server.use('/', express.static(ASSET_DIR));
 
         // Start the server
         _server.listen(_port, function () {
