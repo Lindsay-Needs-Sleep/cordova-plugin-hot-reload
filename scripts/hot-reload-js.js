@@ -139,7 +139,7 @@
         addOpFilesOfTag(etree, 'asset');
     }
 
-    function addOpFilesOfTag(etree, tagName) {
+    function addOpFilesOfTag (etree, tagName) {
         // Find all global modules
         var tags = etree.findall(tagName) || [];
         // Find and add all platform specific modules
@@ -151,13 +151,27 @@
         for (var e in tags) {
             e = tags[e];
             var src_absolute = path.resolve(plugin.path, e.attrib.src);
-            _opFiles[src_absolute] = {
+            e = {
                 src_absolute: src_absolute,
                 src: e.attrib.src,
                 name: e.attrib.name,
                 target: e.attrib.target,
                 type: tagName
             };
+
+            // special tag handling:
+            switch (tagName) {
+            case 'asset':
+                // If the source is a file and the target is a directory
+                if (!fs.lstatSync(src_absolute).isDirectory() && fs.lstatSync(path.join(ASSET_DIR, e.target)).isDirectory()) {
+                    // Append the target path
+                    e.target = path.join(e.target, path.basename(src_absolute));
+                }
+                break;
+            }
+
+            _opFiles[src_absolute] = e;
+
             // Make initial copy of opFile
             updateFileCopy(src_absolute);
         }
@@ -184,13 +198,18 @@
         return rules;
     }
 
-    function getTargetPath(rule, filePath) {
+    /**
+     * Returns the path that the copy should be made at
+     * @param {opRule} rule
+     * @param {string} filePath - path of the original file
+     */
+    function getTargetPath (rule, filePath) {
         switch (rule.type) {
-            case 'js-module':
-                var plugin = getPluginByFile(filePath);
-                return path.resolve(COPIES_DIR, 'plugins', plugin.name, path.relative(plugin.path, filePath));
-            case 'asset':
-                return path.resolve(COPIES_DIR, rule.target, path.relative(rule.src_absolute, filePath));
+        case 'js-module':
+            var plugin = getPluginByFile(filePath);
+            return path.resolve(COPIES_DIR, 'plugins', plugin.name, path.relative(plugin.path, filePath));
+        case 'asset':
+            return path.resolve(COPIES_DIR, rule.target, path.relative(rule.src_absolute, filePath));
         }
     }
 
