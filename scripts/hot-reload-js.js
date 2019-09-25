@@ -226,6 +226,7 @@
 
             switch (rule.type) {
             case 'js-module':
+                var plugin = getPluginByFile(filePath);
                 var fileData = fs.readFileSync(filePath, 'utf-8');
                 if (rule.src.match(/.*\.json$/)) {
                     fileData = 'module.exports = ' + fileData;
