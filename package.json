@@ -10,7 +10,8 @@
   "license": "Apache-2.0",
   "scripts": {
     "test": "npm run eslint",
-    "eslint": "node node_modules/eslint/bin/eslint www && node node_modules/eslint/bin/eslint src && node node_modules/eslint/bin/eslint tests && node node_modules/eslint/bin/eslint hooks && node node_modules/eslint/bin/eslint scripts"
+    "eslint": "node node_modules/eslint/bin/eslint www && node node_modules/eslint/bin/eslint src && node node_modules/eslint/bin/eslint tests && node node_modules/eslint/bin/eslint hooks && node node_modules/eslint/bin/eslint scripts",
+    "eslint-fix": "node node_modules/eslint/bin/eslint www && node node_modules/eslint/bin/eslint --fix src && node node_modules/eslint/bin/eslint --fix tests && node node_modules/eslint/bin/eslint --fix hooks && node node_modules/eslint/bin/eslint --fix scripts"
   },
   "dependencies": {
     "cordova-android": "git+https://github.com/apache/cordova-android.git#4cf3dcfaae6dc82ddb1ccf439d209cbcc2f474a0",

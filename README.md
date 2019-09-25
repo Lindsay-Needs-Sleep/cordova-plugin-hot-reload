@@ -1,33 +1,47 @@
-<h1 align="center">cordova-testing</h1>
+<h1 align="center">cordova-hot-reload</h1>
 
-This is a project that aims to assist in testing plugins with information, or by actually using the project. 
+**cordova-hot-reload** runs a server which will hot reload:
+- all your project's files in www (useful for app development)
+- all www files provided by locally installed plugins (useful for plugin development)
 
-## How To Run [cordova-plugin-test-framework](https://github.com/apache/cordova-plugin-test-framework) Tests
+will serve all files located in www.  It will watch them for changes too so you don't have to reload the app 
 
-To run these types of tests you will need to use an actual Cordova project.  You can use an existing project or you can clone this project. Either way, you should be able to follow these directions:
+## Usage
 
-* From the project root run `npm install`
-* Now add the plugin you want to test (you will need admin permission for the below commands)
-    * Run `cordova plugin add --link <relative path to cordova-plugin>` 
-    * Run `cordova plugin add --link <relative path to cordova-plugin>/tests`
-* Run the project:
-    * `cordova prepare <platform>`
-    * `cordova run <platform>`
+1) From the project root:
+```
+npm install cordova-hot-reload --save-dev
+node node_modules/cordova-hot-reload/serve.js <platform> <port>
+```
+2) Change config.xml:  
+`<content src="index.html" />` to  
+`<content src="http://<computer-ip-address>:<port>/index.html" />`  
+and add `<allow-navigation href="*://<computer-ip-address>/*" />`
 
-### Hot Reload JS 
+3) Run your project:  
+`cordova run <platform>`
 
-* Step 1) Start the hot-reload server:
-    * This will allow you to make changes to the plugin's js and test js files and see the change's reflected immediately after a page refresh
-        * (If using your own project, you can copy the `scripts` folder from this project to your's)
-    * Run `node ./scripts/hot-reload-js.js <platform> [<port default=8333>]` (currently only available for android)
-    * Note: It may be important to avoid running a `cordova prepare/build/run` while the hot-reload server is running, this may result in unexpected and strange errors if the server has a lock on some files
-    * Note: This will create and populate a folder `/.hot_reload_js_files` (incase you were wondering where that came from)
-* In `config.xml` ensure you have the following entries with your correct ip and port.  The IP address will be your computer's local ip (eg. 192.168.1.88), not "localhost".
-    * `<allow-navigation href="*://<local-ip>/*" />`
-    * `<content src="http://<local-ip>:<port>/cdvtests/index.html" />` (Or replace `/cdvtests/index.html` with the location of your start page relative to `www` if you want to develop the plugin while using your project)
-        * `http://<local-ip>:8333` is where the hot-reload server will listen
-* Once the project is loaded onto your device, we can start the **hot re-loading js server** (optional)
+You're good to go!
 
+### Usage details
+
+`<platform>` Currently only supports `android`  
+`<computer-ip-address>` Ensure this is the address of the computer that is running **cordova-hot-reload**, it should be something like `192.168.0.86`, not `localhost`.
+
+
+### Plugin Development
+
+To successfully hot reload your plugin it must be added via link.  You must use **admin permission** for the following commands.
+
+* `cordova plugin add --link <relative path to cordova-plugin>` 
+* `cordova plugin add --link <relative path to cordova-plugin>/tests` (Yep, cordova-hot-reload also works for sub-plugins!)
+
+**Caveats**: 
+- **cordova-hot-reload** does **not** do anything to help with native src files (java/swift/Obj-c).  
+  - Fortunately, thanks to adding via link, you merely need to re-run the project and you're good to go.  (You don't have to remove and re-add the plugin!)  
+  - This also means that you are safe to modify the native code directly in Android Studio if desired.  
+  - Note: The link only works for native files (no js/css/html/etc), you also need to be careful about adding and deleting files.  These changes will be exclusive to the platform folder and will not be transferred back to your plugin folder.
+- If you modify plugin.xml you will need to restart the **cordova-hot-reload** server.
 
 <h1 align="center">Contributing<h1>
 
@@ -37,5 +51,5 @@ Before committing:
 
 * Run `npm test` (from the plugin directory)
   * If it finds any formatting errors you can try and automatically fix them with:
-    * `node node_modules/eslint/bin/eslint <file-path> --fix`
+    * `node run eslint-fix`
   * Otherwise, please manually fix the error before committing
