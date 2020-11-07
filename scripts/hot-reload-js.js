@@ -33,7 +33,7 @@
 
     var ASSET_DIR = {
         android: path.resolve(__dirname, '../platforms/android/app/src/main/assets/www/'),
-        ios: path.resolve(__dirname, '../platforms/ios/TODO') // TODO add actual path
+        ios: path.resolve(__dirname, '../platforms/ios/platform_www')
     };
     var COPIES_DIR = path.resolve(__dirname, '../.hot_reload_js_files');
 
